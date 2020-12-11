@@ -100,8 +100,6 @@ template<typename T, typename A>
 vector<T, A>::~vector ()
 {
   TRACE_FUNC;
-  for (T* ptr = this->elem; ptr < this->elem + this->sz; ++ptr)
-    this->alloc.destroy(ptr);
 }
 
 // Operators overloading
@@ -139,10 +137,10 @@ vector<T, A>& vector<T, A>::operator= (const vector& arg)
   this->alloc.deallocate(this->elem, this->space);
 
   vector_base<T, A> p{ this->alloc, arg.sz };
-  uninitialized_copy(&arg[0], &arg[arg.sz], p);
+  uninitialized_copy(&arg[0], &arg[arg.sz], p.elem);
   this->space = arg.sz;
   this->sz = arg.sz;
-  this->elem = p;
+  this->elem = p.elem;
 
   return *this;
 }
@@ -173,15 +171,19 @@ void vector<T, A>::reserve (size_t newalloc)
 {
   TRACE_FUNC;
   if (newalloc <= this->space) return;
-  vector_base<T, A> p{ this->alloc, newalloc };
-  uninitialized_copy(&this->elem[0], &this->elem[this->sz], p);
+  vector_base<T, A> p{ A(), newalloc };
+  uninitialized_copy(&this->elem[0], &this->elem[this->sz], p.elem);
 
   for (size_t i{0}; i < this->sz; ++i)
     this->alloc.destroy(&this->elem[i]);
 
-  this->alloc.deallocate(this->elem, this->space);
-  this->elem = p;
+  this->alloc.deallocate(&this->elem[0], this->space);
+  this->elem = p.elem;
   this->space = newalloc;
+
+  p.elem = nullptr;
+  p.space = 0;
+  p.sz = 0;
 }
 
 template<typename T, typename A>
@@ -192,15 +194,14 @@ void vector<T, A>::resize (size_t newsize, const T& val)
 
   if (newsize < this->sz)
   {
-    for (T* ptr = this->elem; ptr < this->elem + this->sz; ++ptr)
+    for (T* ptr = this->elem + newsize; ptr < this->elem + this->sz; ++ptr)
       this->alloc.destroy(ptr);
 
-    uninitialized_copy(&this->elem[0], &this->elem[newsize], val);
     this->sz = newsize;
   }
   else
   {
-    uninitialized_copy(&this->elem[this->sz], &this->elem[newsize], val);
+    uninitialized_fill(&this->elem[this->sz], &this->elem[newsize], val);
     this->sz = newsize;
   }
 }

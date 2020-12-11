@@ -16,6 +16,7 @@ template<typename T>
 T* allocator<T>::allocate (int n)
 {
   T* ptr = static_cast<T*>(new char[sizeof(T) * n]);
+  return ptr;
 }
 
 template<typename T>

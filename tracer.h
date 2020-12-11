@@ -24,7 +24,7 @@ private:
 
 
 #define TRACE(name) Tracer tracer_object((name), __FILE__, __LINE__)
-#define TRACE_FUNC TRACE(__func__)
+#define TRACE_FUNC 1//TRACE(__func__)
 
 
 #endif // #ifndef TRACER_H

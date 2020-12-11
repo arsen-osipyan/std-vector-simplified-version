@@ -63,6 +63,7 @@ void value_equality (const T& a, const T& b)
 
 
 void test_constructor ();
+void test_resize ();
 
 
 #endif // TEST_H

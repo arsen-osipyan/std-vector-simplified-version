@@ -40,7 +40,27 @@ public:
 
 private:
   std::vector<double> v;
-  bool b;
+  bool b{true};
+};
+
+
+class X
+{
+public:
+  X ()
+    : v( 1'000'000, 1 )
+  {
+    TRACE_FUNC;
+  }
+
+
+  ~X ()
+  {
+    TRACE_FUNC;
+  }
+
+private:
+  std::vector<double> v;
 };
 
 

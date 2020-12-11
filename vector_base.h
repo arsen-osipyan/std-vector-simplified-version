@@ -3,8 +3,8 @@
 
 
 #include "tracer.h"
+#include <iostream>
 #include <memory>
-
 
 template<typename T, typename A = std::allocator<T> >
 class vector_base
@@ -26,12 +26,12 @@ public:
 // Constructors
 template<typename T, typename A>
 vector_base<T, A>::vector_base (A a, size_t n)
-  : alloc{ a }
-    , elem{ a.allocate(n) }
-    , sz{ n }
-    , space{ n }
 {
   TRACE_FUNC;
+  alloc = a;
+  elem = a.allocate(n);
+  sz = n;
+  space = n;
 }
 
 template<typename T, typename A>
@@ -57,7 +57,9 @@ template<typename T, typename A>
 vector_base<T, A>::~vector_base ()
 {
   TRACE_FUNC;
-  alloc.deallocate(elem, space);
+  for (T* ptr = this->elem; ptr < this->elem + this->sz; ++ptr)
+    this->alloc.destroy(ptr);
+  alloc.deallocate(&elem[0], space);
 }
 
 
