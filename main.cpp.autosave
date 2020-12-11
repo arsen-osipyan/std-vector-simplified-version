@@ -9,7 +9,7 @@ int main()
 {
   TRACE_FUNC;
 
-  test_copy_constructor();
+  test_constructor();
 
   return 0;
 }

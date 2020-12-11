@@ -4,6 +4,14 @@
 
 #include "vector.h"
 #include <iostream>
+#include <vector>
+
+
+static constexpr int SIZE = 1'000'000;
+
+
+class El
+{ };
 
 
 template<typename T>
@@ -55,7 +63,6 @@ void value_equality (const T& a, const T& b)
 
 
 void test_constructor ();
-void test_memory_leak ();
 
 
 #endif // TEST_H
