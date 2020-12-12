@@ -7,11 +7,14 @@
 #include <vector>
 
 
+static constexpr int SIZE = 100'000;
+
+
 class H
 {
 public:
   H (bool s)
-    : v( 1'000'000, 1 )
+    : v( SIZE, 1 )
       , b{ s }
   {
     TRACE_FUNC;
@@ -48,7 +51,7 @@ class X
 {
 public:
   X ()
-    : v( 1'000'000, 1 )
+    : v( SIZE, 1 )
   {
     TRACE_FUNC;
   }

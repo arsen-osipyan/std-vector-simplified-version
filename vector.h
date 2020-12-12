@@ -43,7 +43,22 @@ public:
   const T& operator[] (size_t) const;
   vector&  operator=  (const vector&);
   vector&  operator=  (vector&&);
+  bool operator== (const vector&) const;
 };
+
+template<typename T, typename A>
+std::ostream& operator<< (std::ostream& os, const vector<T, A>& v)
+{
+  os << "{ ";
+  for (size_t i{0}; i < v.size(); ++i)
+  {
+    os << v[i];
+    if (i != v.size() - 1)
+      os << ", ";
+  }
+  os << " }";
+  return os;
+}
 
 
 // Constructors
@@ -163,6 +178,17 @@ vector<T, A>& vector<T, A>::operator= (vector&& arg)
   arg.space = 0;
 
   return *this;
+}
+
+template<typename T, typename A>
+bool vector<T, A>::operator== (const vector& v) const
+{
+  if (this->sz != v.size()) return false;
+  for (size_t i{0}; i < this->sz; ++i)
+  {
+    if (!(this->elem[i] == v[i])) return false;
+  }
+  return true;
 }
 
 // Memory operation
