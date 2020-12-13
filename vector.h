@@ -95,19 +95,9 @@ vector<T, A>::vector (const vector& arg)
 
 template<typename T, typename A>
 vector<T, A>::vector (vector&& arg)
+  : vector_base<T, A> (arg)
 {
   TRACE_FUNC;
-  for (T* ptr = this->elem; ptr < this->elem + this->sz; ++ptr)
-    this->alloc.destroy(ptr);
-  this->alloc.deallocate(this->elem, this->space);
-
-  this->elem = arg.elem;
-  this->sz = arg.sz;
-  this->space = arg.space;
-
-  arg.elem = nullptr;
-  arg.sz = 0;
-  arg.space = 0;
 }
 
 // Destructor
@@ -140,16 +130,14 @@ vector<T, A>& vector<T, A>::operator= (const vector& arg)
 
   if (arg.sz <= this->space)
   {
-    this->sz = arg.sz;
     uninitialized_copy(&arg[0], &arg[arg.sz], this->elem);
-    for (size_t i{this->sz}; i < this->space; ++i)
+    for (size_t i{arg.sz}; i < this->sz; ++i)
       this->alloc.destroy(&this->elem[i]);
     return *this;
   }
 
   for (size_t i{0}; i < this->sz; ++i)
     this->alloc.destroy(&this->elem[i]);
-  this->alloc.deallocate(this->elem, this->space);
 
   vector_base<T, A> p{ this->alloc, arg.sz };
   uninitialized_copy(&arg[0], &arg[arg.sz], p.elem);
@@ -167,15 +155,10 @@ vector<T, A>& vector<T, A>::operator= (vector&& arg)
 
   for (T* ptr = this->elem; ptr < this->elem + this->sz; ++ptr)
     this->alloc.destroy(ptr);
-  this->alloc.deallocate(this->elem, this->space);
 
-  this->elem = arg.elem;
-  this->sz = arg.sz;
-  this->space = arg.space;
-
-  arg.elem = nullptr;
-  arg.sz = 0;
-  arg.space = 0;
+  this->elem = std::move(arg.elem);
+  this->sz = std::move(arg.sz);
+  this->space = std::move(arg.space);
 
   return *this;
 }
@@ -203,7 +186,6 @@ void vector<T, A>::reserve (size_t newalloc)
   for (size_t i{0}; i < this->sz; ++i)
     this->alloc.destroy(&this->elem[i]);
 
-  this->alloc.deallocate(&this->elem[0], this->space);
   this->elem = p.elem;
   this->space = newalloc;
 
@@ -249,7 +231,7 @@ template<typename T, typename A>
 T& vector<T, A>::at (size_t i)
 {
   TRACE_FUNC;
-  if (i < 0 || i >= size())
+  if (i >= size())
     throw out_of_range();
   return this->elem[i];
 }
@@ -258,7 +240,7 @@ template<typename T, typename A>
 const T& vector<T, A>::at (size_t i) const
 {
   TRACE_FUNC;
-  if (i < 0 || i >= size())
+  if (i >= size())
     throw out_of_range();
   return this->elem[i];
 }
