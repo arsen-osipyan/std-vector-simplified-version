@@ -72,7 +72,7 @@ template<typename T, typename A>
 vector_base<T, A>::~vector_base ()
 {
   TRACE_FUNC;
-  alloc.deallocate(&elem[0], space);
+  alloc.deallocate(elem, space);
 }
 
 

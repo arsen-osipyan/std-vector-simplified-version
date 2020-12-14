@@ -95,7 +95,7 @@ vector<T, A>::vector (const vector& arg)
 
 template<typename T, typename A>
 vector<T, A>::vector (vector&& arg)
-  : vector_base<T, A> (arg)
+  : vector_base<T, A> (static_cast<vector_base<T, A>&&>(arg))
 {
   TRACE_FUNC;
 }
@@ -105,20 +105,22 @@ template<typename T, typename A>
 vector<T, A>::~vector ()
 {
   TRACE_FUNC;
+  for (size_t i{0}; i < this->sz; ++i)
+    this->alloc.destroy(&this->elem[i]);
 }
 
 // Operators overloading
 template<typename T, typename A>
 T& vector<T, A>::operator [] (size_t i)
 {
-  TRACE_FUNC;
+//  TRACE_FUNC;
   return this->elem[i];
 }
 
 template<typename T, typename A>
 const T& vector<T, A>::operator [] (size_t i) const
 {
-  TRACE_FUNC;
+//  TRACE_FUNC;
   return this->elem[i];
 }
 
@@ -128,22 +130,19 @@ vector<T, A>& vector<T, A>::operator= (const vector& arg)
   TRACE_FUNC;
   if (this == &arg) return *this;
 
-  if (arg.sz <= this->space)
-  {
-    uninitialized_copy(&arg[0], &arg[arg.sz], this->elem);
-    for (size_t i{arg.sz}; i < this->sz; ++i)
-      this->alloc.destroy(&this->elem[i]);
-    return *this;
-  }
-
   for (size_t i{0}; i < this->sz; ++i)
     this->alloc.destroy(&this->elem[i]);
 
-  vector_base<T, A> p{ this->alloc, arg.sz };
-  uninitialized_copy(&arg[0], &arg[arg.sz], p.elem);
-  this->space = arg.sz;
-  this->sz = arg.sz;
-  this->elem = p.elem;
+  if (arg.sz <= this->space)
+  {
+    uninitialized_copy(arg.elem, arg.elem + arg.sz, this->elem);
+    this->sz = arg.sz;
+    return *this;
+  }
+
+  vector_base<T, A> v{ A(), arg.sz };
+  uninitialized_copy(arg.elem, arg.elem + arg.sz, v.elem);
+  static_cast<vector_base<T, A>&&>(*this) = std::move(v);
 
   return *this;
 }
@@ -156,9 +155,7 @@ vector<T, A>& vector<T, A>::operator= (vector&& arg)
   for (T* ptr = this->elem; ptr < this->elem + this->sz; ++ptr)
     this->alloc.destroy(ptr);
 
-  this->elem = std::move(arg.elem);
-  this->sz = std::move(arg.sz);
-  this->space = std::move(arg.space);
+  static_cast<vector_base<T, A>&&>(*this) = std::move(arg);
 
   return *this;
 }
@@ -181,17 +178,13 @@ void vector<T, A>::reserve (size_t newalloc)
   TRACE_FUNC;
   if (newalloc <= this->space) return;
   vector_base<T, A> p{ A(), newalloc };
-  uninitialized_copy(&this->elem[0], &this->elem[this->sz], p.elem);
+  uninitialized_copy(this->elem, this->elem + this->sz, p.elem);
+  p.sz = this->sz;
 
   for (size_t i{0}; i < this->sz; ++i)
     this->alloc.destroy(&this->elem[i]);
 
-  this->elem = p.elem;
-  this->space = newalloc;
-
-  p.elem = nullptr;
-  p.space = 0;
-  p.sz = 0;
+  std::swap<vector_base<T, A>>(*this, p);
 }
 
 template<typename T, typename A>

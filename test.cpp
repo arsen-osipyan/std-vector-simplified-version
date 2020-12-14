@@ -21,6 +21,16 @@ void test_constructor ()
   }
 }
 
+
+void test_reserve ()
+{
+  vector<X> vx(1'000);
+
+  for (size_t i{1'000}; i < 10'000; ++i)
+    vx.reserve(i);
+}
+
+
 void test_resize ()
 {
   std::cout << "TEST RESIZE():\n";
@@ -71,6 +81,7 @@ void test_resize ()
   }
   std::cout << "END OF BLOCK\n" <<std::endl;
 }
+
 
 void test_push_back ()
 {
@@ -153,6 +164,91 @@ void test_push_back ()
     assert_equal(v2[0].size(), static_cast<size_t>(10));
     assert_equal(v2[0], vector<double>{0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
     assert_equal(v2, vector<vector<double>>{vector<double>{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}});
+  }
+  catch (...)
+  {
+    std::cout << "Fault" << std::endl;
+  }
+  std::cout << "END OF BLOCK\n" <<std::endl;
+}
+
+
+vector<double> generate_vd (size_t n)
+{
+  TRACE_FUNC;
+  vector<double> v(n);
+  for (size_t i{0}; i < n; ++i)
+    v[i] = n;
+  return v;
+}
+
+void test_move_operator ()
+{
+  TRACE_FUNC;
+  std::cout << "TEST OPERATOR= (MOVE):\n";
+  try
+  {
+    vector<double> v1;
+    v1 = generate_vd(4);
+    assert_equal(v1.size(), static_cast<size_t>(4));
+    assert_equal(v1.capacity(), static_cast<size_t>(4));
+    assert_equal(v1, vector<double>{4, 4, 4, 4});
+
+    vector<double> v2;
+    v2 = generate_vd(5);
+
+    assert_equal(v2.size(), static_cast<size_t>(5));
+    assert_equal(v2.capacity(), static_cast<size_t>(5));
+    assert_equal(v2, vector<double>{5, 5, 5, 5, 5});
+
+    vector<double> v3;
+    v3 = std::move(v2);
+
+    assert_equal(v2.size(), static_cast<size_t>(0));
+    assert_equal(v2.capacity(), static_cast<size_t>(0));
+    assert_equal(v2, vector<double>{});
+
+    v2 = std::move(v1);
+
+    assert_equal(v2.size(), static_cast<size_t>(4));
+    assert_equal(v2.capacity(), static_cast<size_t>(4));
+    assert_equal(v2, vector<double>{4, 4, 4, 4});
+
+    v2 = std::move(v3);
+
+    assert_equal(v2.size(), static_cast<size_t>(5));
+    assert_equal(v2.capacity(), static_cast<size_t>(5));
+    assert_equal(v2, vector<double>{5, 5, 5, 5, 5});
+
+    vector<X> vx1(4);
+    vector<X> vx2(3);
+    vx2 = std::move(vx1);
+
+    assert_equal(vx1.size(), static_cast<size_t>(0));
+    assert_equal(vx1.capacity(), static_cast<size_t>(0));
+    assert_equal(vx2.size(), static_cast<size_t>(4));
+    assert_equal(vx2.capacity(), static_cast<size_t>(4));
+  }
+  catch (...)
+  {
+    std::cout << "Fault" << std::endl;
+  }
+  std::cout << "END OF BLOCK\n" <<std::endl;
+}
+
+
+void test_copy_operator ()
+{
+  std::cout << "TEST OPERATOR= (COPY):\n";
+  try
+  {
+    vector<X> vx1(5);
+    vector<X> vx2(3);
+
+    vx1 = vx2;
+
+    assert_equal(vx1.size(), static_cast<size_t>(3));
+    assert_equal(vx1.capacity(), static_cast<size_t>(5));
   }
   catch (...)
   {

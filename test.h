@@ -15,9 +15,12 @@ void assert_equal (const T& a, const T& b)
 }
 
 
+void test_reserve ();
 void test_constructor ();
 void test_resize ();
 void test_push_back ();
+void test_move_operator ();
+void test_copy_operator ();
 
 
 #endif // TEST_H
